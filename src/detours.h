@@ -13,6 +13,10 @@
 
 #define DETOURS_VERSION     30001   // 3.00.01
 
+#ifdef _DEBUG
+	#define DETOUR_DEBUG 1
+#endif // _DEBUG
+
 //////////////////////////////////////////////////////////////////////////////
 //
 #undef DETOURS_X64
@@ -25,8 +29,8 @@
 #undef DETOURS_64BIT
 
 #if defined(_X86_)
-#define DETOURS_X86
-#define DETOURS_OPTION_BITS 64
+	#define DETOURS_X86
+	#define DETOURS_OPTION_BITS 64
 
 #elif defined(_AMD64_)
 #define DETOURS_X64
@@ -835,15 +839,15 @@ PDETOUR_SYM_INFO DetourLoadImageHlp(VOID);
 #define _CRT_STDIO_ARBITRARY_WIDE_SPECIFIERS 1
 
 #ifndef DETOUR_TRACE
-#if DETOUR_DEBUG
-#define DETOUR_TRACE(x) printf x
-#define DETOUR_BREAK()  __debugbreak()
-#include <stdio.h>
-#include <limits.h>
-#else
-#define DETOUR_TRACE(x)
-#define DETOUR_BREAK()
-#endif
+	#if DETOUR_DEBUG
+		#define DETOUR_TRACE(x) printf x
+		#define DETOUR_BREAK()  __debugbreak()
+		#include <stdio.h>
+		#include <limits.h>
+	#else
+		#define DETOUR_TRACE(x)
+		#define DETOUR_BREAK()
+	#endif
 #endif
 
 //#if 1 || defined(DETOURS_IA64)
@@ -1021,13 +1025,6 @@ DETOUR_OFFLINE_LIBRARY(X64)
 DETOUR_OFFLINE_LIBRARY(ARM)
 DETOUR_OFFLINE_LIBRARY(ARM64)
 DETOUR_OFFLINE_LIBRARY(IA64)
-
-//FIXME:
-#ifdef DETOURS_X86
-	#define DetourCopyInstruction   DetourCopyInstructionX86
-	#define DetourSetCodeModule     DetourSetCodeModuleX86
-	#define CDetourDis              CDetourDisX86
-#endif
 
 #undef DETOUR_OFFLINE_LIBRARY
 

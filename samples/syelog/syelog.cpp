@@ -10,7 +10,7 @@
 #include <stdarg.h>
 #include <stddef.h>
 #include <stdlib.h>
-#include "detours.h"
+//#include "detours.h"
 #include "syelog.h"
 
 #include <stdio.h>

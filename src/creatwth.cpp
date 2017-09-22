@@ -22,9 +22,6 @@
 #include <strsafe.h>
 #pragma warning(pop)
 
-#ifdef _DEBUG
-	#define DETOUR_DEBUG 1
-#endif
 #define DETOURS_INTERNAL
 
 #include "detours.h"

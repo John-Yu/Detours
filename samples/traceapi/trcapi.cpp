@@ -6,26 +6,28 @@
 //
 //  Copyright (c) Microsoft Corporation.  All rights reserved.
 //
-#undef WIN32_LEAN_AND_MEAN
-#define _WIN32_WINNT        0x400
-#define WIN32
-#define NT
-#define _WINSOCK_DEPRECATED_NO_WARNINGS
+//#undef WIN32_LEAN_AND_MEAN
+//#define _WIN32_WINNT        0x400
+//#define WIN32
+//#define NT
+//#define _WINSOCK_DEPRECATED_NO_WARNINGS
 
-#define DBG_TRACE   0
-
+//#define DBG_TRACE   0
 #if _MSC_VER >= 1300
-#include <winsock2.h>
+	#include <winsock2.h>
 #endif
 #include <windows.h>
-#include <stdio.h>
+
+//#define DETOURS_INTERNAL
+#include "detours.h"
+
 #pragma warning(push)
 #if _MSC_VER > 1400
 #pragma warning(disable:6102 6103) // /analyze warnings
 #endif
 #include <strsafe.h>
 #pragma warning(pop)
-#include "detours.h"
+#include <stdio.h>
 #include "syelog.h"
 
 #if (_MSC_VER < 1299)
@@ -45,6 +47,14 @@
 
 //////////////////////////////////////////////////////////////////////////////
 #pragma warning(disable:4127)   // Many of our asserts are constants.
+
+//FIXME:
+#ifdef _DEBUG
+#pragma comment(lib, "../../Debug/Detours.lib")
+#else
+#pragma comment(lib, "../../Release/Detours.lib")
+#endif
+#pragma comment(lib, "Ws2_32.lib")
 
 #define ASSERT_ALWAYS(x)   \
     do {                                                        \
@@ -109,7 +119,6 @@ extern "C" {
     VOID ( WINAPI * Real_LeaveCriticalSection)(LPCRITICAL_SECTION lpSection)
         = LeaveCriticalSection;
 }
-
 #include "_win32.cpp"
 
 ////////////////////////////////////////////////////////////// Logging System.
@@ -435,6 +444,11 @@ BOOL ProcessDetach(HMODULE hDll)
         TlsFree(s_nTlsThread);
     }
     return TRUE;
+}
+//DLL  must  export function with ordinal #1.
+extern "C" _declspec(dllexport) int HAHA()
+{
+	return 1;
 }
 
 BOOL APIENTRY DllMain(HINSTANCE hModule, DWORD dwReason, PVOID lpReserved)

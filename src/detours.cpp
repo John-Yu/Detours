@@ -8,6 +8,7 @@
 //
 
 #pragma warning(disable:4068) // unknown pragma (suppress)
+#pragma warning(disable:4477) // 
 
 #if _MSC_VER >= 1900
 #pragma warning(push)
@@ -21,7 +22,6 @@
 #pragma warning(disable: 4710)
 #endif
 
-//#define DETOUR_DEBUG 1
 #define DETOURS_INTERNAL
 
 #include "detours.h"

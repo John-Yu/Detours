@@ -55,9 +55,9 @@
 
 #if defined(DETOURS_X86_OFFLINE_LIBRARY)
 
-#define DetourCopyInstruction   DetourCopyInstructionX86
-#define DetourSetCodeModule     DetourSetCodeModuleX86
-#define CDetourDis              CDetourDisX86
+//#define DetourCopyInstruction   DetourCopyInstructionX86
+//#define DetourSetCodeModule     DetourSetCodeModuleX86
+//#define CDetourDis              CDetourDisX86
 #define DETOURS_X86
 
 #elif defined(DETOURS_X64_OFFLINE_LIBRARY)
