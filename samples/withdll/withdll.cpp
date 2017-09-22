@@ -16,6 +16,13 @@
 #include <strsafe.h>
 #pragma warning(pop)
 
+//FIXME:
+#ifdef _DEBUG
+#pragma comment(lib, "../../Debug/Detours.lib")
+#else
+#pragma comment(lib, "../../Release/Detours.lib")
+#endif
+
 //////////////////////////////////////////////////////////////////////////////
 //
 void PrintUsage(void)
@@ -528,6 +535,7 @@ int CDECL main(int argc, char **argv)
         printf("withdll.exe: GetExitCodeProcess failed: %d\n", GetLastError());
         return 9010;
     }
+	printf("Process exited!\n");
 
     for (DWORD n = 0; n < nDlls; n++) {
         if (rpszDllsOut[n] != NULL) {
