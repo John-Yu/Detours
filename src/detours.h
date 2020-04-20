@@ -2,7 +2,7 @@
 //
 //  Core Detours Functionality (detours.h of detours.lib)
 //
-//  Microsoft Research Detours Package, Version 3.0 Build_343.
+//  Microsoft Research Detours Package, Version 4.0.1
 //
 //  Copyright (c) Microsoft Corporation.  All rights reserved.
 //
@@ -11,14 +11,39 @@
 #ifndef _DETOURS_H_
 #define _DETOURS_H_
 
-#define DETOURS_VERSION     30001   // 3.00.01
-
-#ifdef _DEBUG
-	#define DETOUR_DEBUG 1
-#endif // _DEBUG
+#define DETOURS_VERSION     0x4c0c1   // 0xMAJORcMINORcPATCH
 
 //////////////////////////////////////////////////////////////////////////////
 //
+
+#ifdef DETOURS_INTERNAL
+
+#define _CRT_STDIO_ARBITRARY_WIDE_SPECIFIERS 1
+#define _ARM_WINAPI_PARTITION_DESKTOP_SDK_AVAILABLE 1
+
+#pragma warning(disable:4068) // unknown pragma (suppress)
+
+#if _MSC_VER >= 1900
+#pragma warning(push)
+#pragma warning(disable:4091) // empty typedef
+#endif
+
+#include <windows.h>
+#if (_MSC_VER < 1310)
+#else
+#pragma warning(push)
+#if _MSC_VER > 1400
+#pragma warning(disable:6102 6103) // /analyze warnings
+#endif
+#include <strsafe.h>
+#pragma warning(pop)
+#endif
+
+#endif // DETOURS_INTERNAL
+
+//////////////////////////////////////////////////////////////////////////////
+//
+
 #undef DETOURS_X64
 #undef DETOURS_X86
 #undef DETOURS_IA64
@@ -29,8 +54,8 @@
 #undef DETOURS_64BIT
 
 #if defined(_X86_)
-	#define DETOURS_X86
-	#define DETOURS_OPTION_BITS 64
+#define DETOURS_X86
+#define DETOURS_OPTION_BITS 64
 
 #elif defined(_AMD64_)
 #define DETOURS_X64
@@ -64,7 +89,12 @@
 //#define DETOURS_OPTION_BITS 32
 #endif
 
-#define VER_DETOURS_BITS    DETOUR_STRINGIFY(DETOURS_BITS)
+/////////////////////////////////////////////////////////////// Helper Macros.
+//
+#define DETOURS_STRINGIFY_(x)    #x
+#define DETOURS_STRINGIFY(x)    DETOURS_STRINGIFY_(x)
+
+#define VER_DETOURS_BITS    DETOURS_STRINGIFY(DETOURS_BITS)
 
 //////////////////////////////////////////////////////////////////////////////
 //
@@ -380,15 +410,34 @@ typedef struct _DETOUR_EXE_RESTORE
 
     IMAGE_DOS_HEADER    idh;
     union {
-        IMAGE_NT_HEADERS    inh;
+        IMAGE_NT_HEADERS    inh;        // all environments have this
+#ifdef IMAGE_NT_OPTIONAL_HDR32_MAGIC    // some environments do not have this
         IMAGE_NT_HEADERS32  inh32;
+#endif
+#ifdef IMAGE_NT_OPTIONAL_HDR64_MAGIC    // some environments do not have this
         IMAGE_NT_HEADERS64  inh64;
+#endif
+#ifdef IMAGE_NT_OPTIONAL_HDR64_MAGIC    // some environments do not have this
         BYTE                raw[sizeof(IMAGE_NT_HEADERS64) +
                                 sizeof(IMAGE_SECTION_HEADER) * 32];
+#else
+        BYTE                raw[0x108 + sizeof(IMAGE_SECTION_HEADER) * 32];
+#endif
     };
     DETOUR_CLR_HEADER   clr;
 
 } DETOUR_EXE_RESTORE, *PDETOUR_EXE_RESTORE;
+
+#ifdef IMAGE_NT_OPTIONAL_HDR64_MAGIC
+C_ASSERT(sizeof(IMAGE_NT_HEADERS64) == 0x108);
+#endif
+
+// The size can change, but assert for clarity due to the muddying #ifdefs.
+#ifdef _WIN64
+C_ASSERT(sizeof(DETOUR_EXE_RESTORE) == 0x688);
+#else
+C_ASSERT(sizeof(DETOUR_EXE_RESTORE) == 0x678);
+#endif
 
 typedef struct _DETOUR_EXE_HELPER
 {
@@ -417,11 +466,6 @@ typedef struct _DETOUR_EXE_HELPER
       0,\
       0,\
 }
-
-/////////////////////////////////////////////////////////////// Helper Macros.
-//
-#define DETOURS_STRINGIFY(x)    DETOURS_STRINGIFY_(x)
-#define DETOURS_STRINGIFY_(x)    #x
 
 ///////////////////////////////////////////////////////////// Binary Typedefs.
 //
@@ -510,6 +554,8 @@ PVOID WINAPI DetourCopyInstruction(_In_opt_ PVOID pDst,
                                    _Out_opt_ LONG *plExtra);
 BOOL WINAPI DetourSetCodeModule(_In_ HMODULE hModule,
                                 _In_ BOOL fLimitReferencesToModule);
+PVOID WINAPI DetourAllocateRegionWithinJumpBounds(_In_ LPCVOID pbTarget,
+                                                  _Out_ PDWORD pcbAllocatedSize);
 
 ///////////////////////////////////////////////////// Loaded Binary Functions.
 //
@@ -839,20 +885,19 @@ PDETOUR_SYM_INFO DetourLoadImageHlp(VOID);
 #define _CRT_STDIO_ARBITRARY_WIDE_SPECIFIERS 1
 
 #ifndef DETOUR_TRACE
-	#if DETOUR_DEBUG
-		#define DETOUR_TRACE(x) printf x
-		#define DETOUR_BREAK()  __debugbreak()
-		#include <stdio.h>
-		#include <limits.h>
-	#else
-		#define DETOUR_TRACE(x)
-		#define DETOUR_BREAK()
-	#endif
+#if DETOUR_DEBUG
+#define DETOUR_TRACE(x) printf x
+#define DETOUR_BREAK()  __debugbreak()
+#include <stdio.h>
+#include <limits.h>
+#else
+#define DETOUR_TRACE(x)
+#define DETOUR_BREAK()
+#endif
 #endif
 
-//#if 1 || defined(DETOURS_IA64)
-//FIXME:
-#if defined(DETOURS_IA64)  
+#if 1 || defined(DETOURS_IA64)
+
 //
 // IA64 instructions are 41 bits, 3 per bundle, plus 5 bit bundle template => 128 bits per bundle.
 //

@@ -2,7 +2,7 @@
 //
 //  Detours Test Program (syelog.cpp of syelog.lib)
 //
-//  Microsoft Research Detours Package, Version 3.0.
+//  Microsoft Research Detours Package
 //
 //  Copyright (c) Microsoft Corporation.  All rights reserved.
 //
@@ -10,7 +10,7 @@
 #include <stdarg.h>
 #include <stddef.h>
 #include <stdlib.h>
-//#include "detours.h"
+#include "detours.h"
 #include "syelog.h"
 
 #include <stdio.h>

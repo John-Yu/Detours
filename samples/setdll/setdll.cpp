@@ -2,7 +2,7 @@
 //
 //  Detours Test Program (setdll.cpp of setdll.exe)
 //
-//  Microsoft Research Detours Package, Version 3.0.
+//  Microsoft Research Detours Package
 //
 //  Copyright (c) Microsoft Corporation.  All rights reserved.
 //
@@ -17,13 +17,6 @@
 #endif
 #include <strsafe.h>
 #pragma warning(pop)
-
-//FIXME:
-#ifdef _DEBUG
-#pragma comment(lib, "../../Debug/Detours.lib")
-#else
-#pragma comment(lib, "../../Release/Detours.lib")
-#endif
 
 ////////////////////////////////////////////////////////////// Error Messages.
 //

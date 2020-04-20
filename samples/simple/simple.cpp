@@ -2,7 +2,7 @@
 //
 //  Detours Test Program (simple.cpp of simple.dll)
 //
-//  Microsoft Research Detours Package, Version 3.0.
+//  Microsoft Research Detours Package
 //
 //  Copyright (c) Microsoft Corporation.  All rights reserved.
 //
@@ -12,37 +12,12 @@
 //
 #include <stdio.h>
 #include <windows.h>
-#include <strsafe.h>
 #include "detours.h"
-
-//FIXME:
-#ifdef _DEBUG
-#pragma comment(lib, "../../Debug/Detours.lib")
-#else
-#pragma comment(lib, "../../Release/Detours.lib")
-#endif
-
-PVOID g_pOldMessageBoxA = NULL;
-typedef int (WINAPI *PfuncMessageBoxA)(HWND hWnd, LPCSTR lpText, LPCSTR lpCaption, UINT uType);
-int WINAPI ZwNewMessageBoxA(HWND hWnd, LPCSTR lpText, LPCSTR lpCaption, UINT uType)
-{
-	CHAR cCaption[MAX_PATH];
-	size_t cch = 0;
-	HRESULT hr = StringCchLengthA(lpCaption, MAX_PATH, &cch);
-	if (SUCCEEDED(hr)) {
-		hr = StringCchCopyA(cCaption, cch + 1, lpCaption);
-	}
-	cCaption[cch++] = ':';
-	cCaption[cch++] = ')';
-	cCaption[cch++] = 0;
-
-	return ((PfuncMessageBoxA)g_pOldMessageBoxA)(hWnd, lpText, cCaption, uType);
-}
 
 static LONG dwSlept = 0;
 static DWORD (WINAPI * TrueSleepEx)(DWORD dwMilliseconds, BOOL bAlertable) = SleepEx;
 
-extern "C" _declspec(dllexport) DWORD WINAPI TimedSleepEx(DWORD dwMilliseconds, BOOL bAlertable)
+DWORD WINAPI TimedSleepEx(DWORD dwMilliseconds, BOOL bAlertable)
 {
     DWORD dwBeg = GetTickCount();
     DWORD ret = TrueSleepEx(dwMilliseconds, bAlertable);
@@ -73,8 +48,6 @@ BOOL WINAPI DllMain(HINSTANCE hinst, DWORD dwReason, LPVOID reserved)
         DetourTransactionBegin();
         DetourUpdateThread(GetCurrentThread());
         DetourAttach(&(PVOID&)TrueSleepEx, TimedSleepEx);
-		g_pOldMessageBoxA = DetourFindFunction("User32.dll", "MessageBoxA");
-		DetourAttach(&g_pOldMessageBoxA, ZwNewMessageBoxA);
         error = DetourTransactionCommit();
 
         if (error == NO_ERROR) {
@@ -90,8 +63,7 @@ BOOL WINAPI DllMain(HINSTANCE hinst, DWORD dwReason, LPVOID reserved)
         DetourTransactionBegin();
         DetourUpdateThread(GetCurrentThread());
         DetourDetach(&(PVOID&)TrueSleepEx, TimedSleepEx);
-		DetourDetach(&g_pOldMessageBoxA, ZwNewMessageBoxA);
-		error = DetourTransactionCommit();
+        error = DetourTransactionCommit();
 
         printf("simple" DETOURS_STRINGIFY(DETOURS_BITS) ".dll:"
                " Removed SleepEx() (result=%d), slept %d ticks.\n", error, dwSlept);

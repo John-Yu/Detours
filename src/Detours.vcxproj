@@ -23,7 +23,7 @@
     <ProjectGuid>{80A71752-4916-4C7D-AECE-6DD67317C38C}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>Detours</RootNamespace>
-    <WindowsTargetPlatformVersion>10.0.14393.0</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
     <ProjectName>Detours</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
@@ -43,7 +43,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
     <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v141</PlatformToolset>
+    <PlatformToolset>v142</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
@@ -134,6 +134,8 @@
   <ItemGroup>
     <ClCompile Include="creatwth.cpp" />
     <ClCompile Include="detours.cpp" />
+    <ClCompile Include="disasm.cpp" />
+    <ClCompile Include="disolx64.cpp" />
     <ClCompile Include="disolx86.cpp" />
     <ClCompile Include="image.cpp" />
     <ClCompile Include="modules.cpp" />
